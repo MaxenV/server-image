@@ -3,11 +3,11 @@
 # Stage 1: Kompilacja aplikacji w języku Go
 FROM golang:latest AS build
 
-RUN apt-get update && apt-get install -y tzdata
+RUN --mount=type=cache,target=/root/.cache/go-build apt-get update && apt-get install -y tzdata
 
 COPY app.go .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-extldflags "-static"' -o /server app.go
+RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o /server app.go
 
 # Stage 2: Utworzenie obrazu kontenera opartego na scratch
 FROM scratch
