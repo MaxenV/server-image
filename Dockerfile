@@ -12,8 +12,6 @@ RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 go build -a -l
 # Stage 2: Utworzenie obrazu kontenera opartego na scratch
 FROM scratch
 
-ADD alpine-minirootfs-3.19.1-x86_64.tar /
-
 COPY --from=build /server /server
 
 EXPOSE 8080
