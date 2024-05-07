@@ -9,14 +9,22 @@ COPY app.go .
 
 RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o /server app.go
 
-# Stage 2: Utworzenie obrazu kontenera opartego na scratch
+# Stage 2: Utworzenie programu testującego
+FROM golang:latest AS build-test
+
+COPY testApp.go .
+
+RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o /test testApp.go
+
+# Stage 3: Utworzenie obrazu kontenera opartego na scratch
 FROM scratch
 
 COPY --from=build /server /server
+COPY --from=build-test /test /test
 
 EXPOSE 8080
 LABEL org.opencontainers.image.authors="Michał Kryk krykmichalv@gmail.com"
 
 CMD ["/server"]
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 CMD [ "wget", "-q", "-O", "-", "http://localhost:8080" ] || exit 1
+HEALTHCHECK --interval=10s --timeout=2s --start-period=3s --retries=3 CMD ["/test"] || exit 1
