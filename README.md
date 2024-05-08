@@ -1,3 +1,16 @@
+Multistage building of simple application shows IP addres and current time in Warsaw.
+The goal is to build lightest weight image.
+
+You can find the image on [DockerHub repository](https://hub.docker.com/repository/docker/maxenv/server-image/general)
+
+# Versions
+
+There are three versions of dockerfile:
+
+1. default Dockerfile - based on alpine and contains HEALTHCHECK
+2. Dockerfile_selfTest - based on scratch and contains HEALTHCHECK test wrote in goLang
+3. Dockerfile_minimal - this is the lightest but don't have any HEALTHCHECK, only the app
+
 # Start container
 
 docker run --rm -it -p 8080:8080 --name Test1 maxenv/server-image
@@ -19,7 +32,7 @@ docker buildx create --use --name mybuilder --driver docker-container --bootstra
 Use the following command to build the container:
 
 ```bash
-docker build -t local/server-image.
+docker buildx build -t local/server-image .
 ```
 
 ### Command which I use
@@ -48,6 +61,16 @@ docker run --rm -it -p 8080:8080 --name Test1 maxenv/server-image
 
 After running the container, you can retrieve information from the server in your terminal and by visiting http://localhost:8080 in your web browser.
 
+<p>
+
+Screen from terminal<br>
+![Screen from terminal](screenshots/TerminalWorks.png)
+
+Screen from website<br>
+![Screen from website](screenshots/website.png)
+
+</p>
+
 ## d. Check image layers
 
 ```bash
@@ -59,3 +82,7 @@ or for localbuild
 ```bash
 docker history local/server-image
 ```
+
+# Scout Vulnerabilities
+
+![Vulnerabilities](screenshots/Vulnerabilities.png)
