@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.2
 
 # Stage 1: Kompilacja aplikacji w języku Go
-FROM golang:latest AS build
+FROM golang:1.20 AS build
 
 RUN --mount=type=cache,target=/root/.cache/go-build apt-get update && apt-get install -y tzdata git
 

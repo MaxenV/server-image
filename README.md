@@ -40,7 +40,7 @@ docker buildx build -t local/server-image .
 I use this command to build the Docker image for multiple platforms and push it to Docker Hub:
 
 ```bash
-docker buildx build --platform linux/amd64,linux/arm64 --cache-from=type=registry,ref=maxenv/server-image:latest --cache-to=type=registry,ref=maxenv/server-image:cache,mode=max --push -t maxenv/server-image:latest .
+docker buildx build --sbom=true --provenance=mode=max --platform linux/amd64,linux/arm64 --cache-from=type=registry,ref=maxenv/server-image:latest --cache-to=type=registry,ref=maxenv/server-image:cache,mode=max --push -t maxenv/server-image:latest .
 ```
 
 ## b. run conainer on build image
@@ -85,4 +85,20 @@ docker history local/server-image
 
 # Scout Vulnerabilities
 
+## Commands to check vulnerabilities
+
+```bash
+docker scout quickview maxenv/server-image:latest
+```
+
+```bash
+docker scout cves maxenv/server-image:latest
+```
+
+## Screenshots
+
 ![Vulnerabilities](screenshots/Vulnerabilities.png)
+
+![Quickview](screenshots/quickview.png)
+
+![Cves](screenshots/cves.png)
