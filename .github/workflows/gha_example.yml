@@ -1,4 +1,4 @@
-name: GHAction server-image
+name: server-image
 
 on:
   workflow_dispatch:
@@ -37,6 +37,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -48,3 +49,49 @@ jobs:
           cache-to: |
             type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/server-image:cache
           tags: ${{ steps.meta.outputs.tags }}
+
+      - name: Docker Scout vulnerability scan
+        id: scout
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: ${{ vars.DOCKERHUB_USERNAME }}/server-image:${{ steps.meta.outputs.version }}
+          sarif-file: sarif-output.json
+          summary: true
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Show SARIF file
+        run: cat sarif-output.json
+
+      - name: Parse SARIF file
+        id: parse-sarif
+        run: |
+          jq '.runs[].results' < sarif-output.json > scanning-results.json
+
+      - name: Check vulnerability scan results
+        id: check-scan
+        run: |
+          critical=$(jq '.[] | select(.level == "error") | .message' < scanning-results.json | wc -l)
+          high=$(jq '.[] | select(.level == "warning") | .message' < scanning-results.json | wc -l)
+
+      - name: show scanning results
+        run: |
+          echo "Critical vulnerabilities: $critical"
+          echo "High vulnerabilities: $high"
+
+      - name: Docker push if there is no critical or high vulnerabilities
+        id: docker-push
+        run: |
+
+          if [ "$critical" -ne 0 ] || [ "$high" -ne 0 ]; then
+            echo "Image contains critical or high vulnerabilities. Skipping push to GHCR."
+            exit 1
+          else
+            echo "No critical or high vulnerabilities found. Pushing image to GHCR."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner}} --password-stdin
+            docker pull maxenv/server-image:${{ steps.meta.outputs.version }}
+            docker tag maxenv/server-image:${{ steps.meta.outputs.version }} ghcr.io/${{ vars.GH_USERNAME }}/server-image:${{ github.sha }}
+            docker push ghcr.io/${{ vars.GH_USERNAME }}/server-image:${{ github.sha }}
+          fi
