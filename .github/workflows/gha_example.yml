@@ -18,7 +18,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ vars.DOCKERHUB_USERNAME }}/lab9
+          images: ${{ vars.DOCKERHUB_USERNAME }}/server-image
           flavor: latest=false
           tags: |
             type=sha,priority=100,prefix=sha-,format=short
@@ -44,7 +44,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           cache-from: |
-            type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/lab9:cache
+            type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/server-image:cache
           cache-to: |
-            type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/lab9:cache
+            type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/server-image:cache
           tags: ${{ steps.meta.outputs.tags }}
