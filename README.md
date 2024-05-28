@@ -102,3 +102,37 @@ docker scout cves maxenv/server-image:latest
 ![Quickview](screenshots/quickview.png)
 
 ![Cves](screenshots/cves.png)
+
+# GitHub Actions Workflow
+
+The GitHub Actions workflow file, `gha_example.yml`, automates the process of building, tagging, and pushing a Docker image to DockerHub, as well as scanning the image for vulnerabilities.
+
+Here's a step-by-step breakdown of the workflow:
+
+1. **Trigger**: The workflow is triggered manually (`workflow_dispatch`) or when a new tag is pushed to the repository.
+
+2. **Checkout**: The workflow checks out the source code of the repository.
+
+3. **Docker Metadata Definitions**: The workflow defines metadata for the Docker image, such as the image name and tags.
+
+4. **QEMU and Buildx Setup**: The workflow sets up QEMU and Buildx, which are tools used for building Docker images.
+
+5. **DockerHub Login**: The workflow logs in to DockerHub using the provided username and token.
+
+6. **Build and Push Docker Image**: The workflow builds the Docker image using the Dockerfile in the repository and pushes the image to DockerHub.
+
+7. **Docker Scout Vulnerability Scan**: The workflow scans the Docker image for vulnerabilities using Docker Scout. The results are saved in a SARIF file.
+
+8. **Install jq**: The workflow installs `jq`, a command-line JSON processor.
+
+9. **Show SARIF File**: The workflow displays the contents of the SARIF file.
+
+10. **Parse SARIF File**: The workflow parses the SARIF file and saves the results in a JSON file.
+
+11. **Check Vulnerability Scan Results**: The workflow checks the vulnerability scan results and counts the number of critical and high vulnerabilities.
+
+12. **Show Scanning Results**: The workflow displays the number of critical and high vulnerabilities.
+
+13. **Docker Push**: If there are no critical or high vulnerabilities, the workflow pushes the Docker image to GitHub Container Registry (GHCR). If there are any critical or high vulnerabilities, the workflow skips this step.
+
+This workflow ensures that the Docker image is built and pushed automatically, and that any vulnerabilities in the image are identified and reported. This helps maintain the security and integrity of the Docker image.
