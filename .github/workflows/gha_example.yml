@@ -35,8 +35,33 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build Docker image without pushing
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: false
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/server-image:latest
 
-      - name: Build and push Docker image
+      - name: Docker Scout vulnerability scan
+        id: scout
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: ${{ vars.DOCKERHUB_USERNAME }}/server-image:${{ steps.meta.outputs.version }}
+          sarif-file: sarif-output.json
+          summary: true
+
+      - name: Fail if critical vulnerabilities found
+        run: |
+          if grep -q "critical" sarif-output.json; then
+            echo "Critical vulnerabilities found, failing build"
+            exit 1
+          fi
+
+      - name: Push Docker image if no critical or high vulnerabilities
         uses: docker/build-push-action@v5
         with:
           context: .
